@@ -1,21 +1,22 @@
+import os
+from dotenv import load_dotenv
 import logging
 import requests
 import dateutil.parser
 
 from airflow.hooks.S3_hook import S3Hook
 
-EIA_API_KEY = '6674b1b8335bf22ca494e401e196db18'
 URL = f"http://api.eia.gov/series/"
 
 
-def process_generation(SERIES_ID):
-    generation_data = get_generation(SERIES_ID)
+def process_generation(SERIES_ID, api_key):
+    generation_data = get_generation(SERIES_ID, api_key)
     save_generation(generation_data)
     return
 
 
-def process_demand(SERIES_ID):
-    demand_data = get_demand(SERIES_ID)
+def process_demand(SERIES_ID, api_key):
+    demand_data = get_demand(SERIES_ID, api_key)
     save_demand(demand_data)
     return
 
@@ -42,7 +43,7 @@ def save_demand(demand_data, bucket_name='us-energy'):
                           encoding='utf-8')
 
 
-def get_generation(SERIES_ID):
+def get_generation(SERIES_ID, EIA_API_KEY):
 
     PARAMS = {
         'num': 1,
@@ -61,7 +62,7 @@ def get_generation(SERIES_ID):
     return generation_data
 
 
-def get_demand(SERIES_ID):
+def get_demand(SERIES_ID, EIA_API_KEY):
 
     PARAMS = {
         'num': 1,
@@ -71,6 +72,7 @@ def get_demand(SERIES_ID):
 
     r = requests.get(url=URL, params=PARAMS)
     data = r.json()
+    print("DATA: ", data)
 
     ts = str(dateutil.parser.parse(data["series"][0]["data"][0][0]))
     demand = str(data["series"][0]["data"][0][1])
@@ -81,7 +83,12 @@ def get_demand(SERIES_ID):
 
 
 if __name__ == "__main__":
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    EIA_API_KEY = os.getenv('EIA_API_KEY')
     GENERATION_SERIES_ID = 'EBA.FLA-ALL.NG.H'
     DEMAND_SERIES_ID = 'EBA.FLA-ALL.D.H'
 
-    print(process_demand(DEMAND_SERIES_ID))
+    print(process_demand(DEMAND_SERIES_ID, EIA_API_KEY))
