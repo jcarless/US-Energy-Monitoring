@@ -1,5 +1,3 @@
-import os
-from dotenv import load_dotenv
 import logging
 import requests
 import dateutil.parser
@@ -72,7 +70,6 @@ def get_demand(SERIES_ID, EIA_API_KEY):
 
     r = requests.get(url=URL, params=PARAMS)
     data = r.json()
-    print("DATA: ", data)
 
     ts = str(dateutil.parser.parse(data["series"][0]["data"][0][0]))
     demand = str(data["series"][0]["data"][0][1])
@@ -91,4 +88,4 @@ if __name__ == "__main__":
     GENERATION_SERIES_ID = 'EBA.FLA-ALL.NG.H'
     DEMAND_SERIES_ID = 'EBA.FLA-ALL.D.H'
 
-    print(process_demand(DEMAND_SERIES_ID, EIA_API_KEY))
+    print(process_generation(GENERATION_SERIES_ID, EIA_API_KEY))
