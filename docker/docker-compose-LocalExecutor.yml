@@ -3,11 +3,13 @@ services:
     postgres:
         image: postgres:9.6
         volumes:
-            - ./postgres:/var/lib/postgresql/us-energy-data
+            - ./postgres:/var/lib/postgresql/real-time-traffic
         environment:
             - POSTGRES_USER=airflow
             - POSTGRES_PASSWORD=airflow
             - POSTGRES_DB=airflow
+            - AIRFLOW__CORE__FERNET_KEY=0pwbs8AX4oncKZ7ZLxvx68rWIqmGXXGPamM9YEuOav8=
+
 
     webserver:
         image: romanx/us-energy-airflow:0.0
@@ -17,6 +19,8 @@ services:
         environment:
             - LOAD_EX=n
             - EXECUTOR=Local
+            - AIRFLOW__CORE__FERNET_KEY=0pwbs8AX4oncKZ7ZLxvx68rWIqmGXXGPamM9YEuOav8=
+
         volumes:
             - ../airflow/dags:/usr/local/airflow/dags
             - ../airflow/operators:/usr/local/airflow/operators

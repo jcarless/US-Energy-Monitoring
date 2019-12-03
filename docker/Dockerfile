@@ -10,6 +10,8 @@ ARG AIRFLOW_USER_HOME=/usr/local/airflow
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
 ENV AIRFLOW_HOME=${AIRFLOW_USER_HOME}
+ENV AIRFLOW_GPL_UNIDECODE yes
+
 
 # Define en_US.
 ENV LANGUAGE en_US.UTF-8
@@ -52,6 +54,7 @@ RUN set -ex \
     && pip install apache-airflow[crypto,celery,postgres,s3,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
     && pip install 'redis==3.2' \
     && pip install requests \
+    && pip install boto \
     && pip install boto3 \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
