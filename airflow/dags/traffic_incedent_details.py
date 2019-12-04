@@ -14,7 +14,7 @@ from operators.us_traffic_incident_details import load_traffic_incident_details
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime.utcnow() - timedelta(minutes=2),
+    "start_date": datetime.utcnow() - timedelta(minutes=3),
     "email": "carless.jerome@gmail.com",
     "email_on_failure": True,
     "email_on_retry": False,
