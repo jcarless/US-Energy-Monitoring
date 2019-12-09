@@ -33,7 +33,7 @@ def save_traffic_incident_details(data, bucket_name, s3_connection):
         s3 = S3Hook(aws_conn_id=s3_connection)
         date_time = datetime.utcnow().replace(microsecond=0).isoformat()
 
-        key = f'traffic_details/raw/{date_time}.json.gz'
+        key = f'traffic/incedent_details/raw/{date_time}.json.gz'
 
         s3.load_bytes(zip_data(data),
                       key=key,
@@ -64,7 +64,7 @@ def get_traffic_details(bounding_box, api_key):
 
     try:
         PARAMS = {
-            'projection': 'EPSG900913',
+            'projection': 'EPSG4326',
             'key': api_key,
             'expandCluster': 'false'
         }
@@ -85,6 +85,13 @@ def get_traffic_details(bounding_box, api_key):
         raise e
 
 
+# DISTANCE BETWEEN TWO POINTS
+# import geopy.distance
+
+
+# coords_1 = (52.2296756, 21.0122287)
+# coords_2 = (52.406374, 16.9251681)
+# print geopy.distance.vincenty(coords_1, coords_2).miles
 if __name__ == "__main__":
     api_key = BaseHook.get_connection("tomtom_api").password
     bounding_box = Variable.get("usa_bounding_box")
