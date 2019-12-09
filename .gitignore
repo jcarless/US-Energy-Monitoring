@@ -104,3 +104,6 @@ venv.bak/
 .mypy_cache/
 .vscode/settings.json
 project-ideas.docx
+docker/credentials/connections.json
+top-40-us-cities.csv
+pod.yaml

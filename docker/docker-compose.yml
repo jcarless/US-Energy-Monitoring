@@ -12,7 +12,7 @@ services:
 
 
     webserver:
-        image: romanx/us-energy-airflow:0.0
+        image: romanx/real-time-traffic:latest
         restart: always
         depends_on:
             - postgres
@@ -23,7 +23,6 @@ services:
 
         volumes:
             - ../airflow/dags:/usr/local/airflow/dags
-            - ../airflow/operators:/usr/local/airflow/operators
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:

@@ -1,14 +1,20 @@
 import requests
 import pytz
 import datetime
+import io
+import csv
+import json
 
 from airflow.hooks.base_hook import BaseHook
+from airflow.hooks.S3_hook import S3Hook
+
+from helper_functions import zip_json
 
 
 URL = "https://api.darksky.net/forecast"
 
 
-def load_forecast(lon, lat, api_key=None):
+def load_forecast(lon, lat, city, api_key=None, bucket_name='real-time-traffic', s3_connection="s3_connections"):
     if api_key is None:
         print("Loading API Key...")
         api_key = BaseHook.get_connection("dark_sky").password
@@ -19,7 +25,33 @@ def load_forecast(lon, lat, api_key=None):
     if hasattr(forecast, 'alerts'):
         alerts_transformed = transform_alerts(forecast)
 
-    # upload_forecast(forecast_transformed)
+        load_to_s3(type="alerts",
+                   city=city,
+                   data=alerts_transformed,
+                   bucket_name=bucket_name,
+                   s3_connection=s3_connection)
+
+    load_to_s3(type="current",
+               city=city,
+               data=forecast_transformed,
+               bucket_name=bucket_name,
+               s3_connection=s3_connection)
+
+
+def load_to_s3(type, city, data, bucket_name, s3_connection):
+    try:
+        zipped_data = zip_json(data)
+        s3 = S3Hook(aws_conn_id=s3_connection)
+        date_time = datetime.datetime.fromtimestamp(data["time_utc"]).replace(second=0, microsecond=0).isoformat()
+        key = f'traffic/weather/{city}/{type}/{date_time}.json.gz'
+
+        s3.load_bytes(zipped_data,
+                      key=key,
+                      bucket_name=bucket_name)
+
+    except BaseException as e:
+        print("Failed to load data to s3!")
+        raise e
 
 
 def get_forecast(lon, lat, api_key):
@@ -43,7 +75,7 @@ def transform_forecast(forecast):
     currently = forecast["currently"]
 
     current_weather = {
-        "time_utc": datetime.datetime.fromtimestamp(currently["time"]),
+        "time_utc": currently["time"],
         "timezone": forecast["timezone"],
         "lon": forecast["longitude"],
         "lat": forecast["latitude"],
@@ -62,8 +94,6 @@ def transform_forecast(forecast):
         "precip_intensity_error": currently["precipIntensityError"] if hasattr(currently, 'precipIntensityError') else None
     }
 
-    print("CURRENT: ", current_weather)
-
     return current_weather
 
 
@@ -75,7 +105,7 @@ def transform_alerts(forecast):
     alerts_transformed = {
         "lon": forecast["longitude"],
         "lat": forecast["latitude"],
-        "time_utc": datetime.datetime.fromtimestamp(alerts["time"]),
+        "time_utc": alerts["time"],
         "expires": datetime.datetime.fromtimestamp(alerts["expires"]),
         "title": alerts["title"],
         "description": alerts["description"],
@@ -86,4 +116,4 @@ def transform_alerts(forecast):
 
 
 if __name__ == "__main__":
-    load_forecast(40.7127837, -74.0059413)
+    load_forecast(40.7127837, -74.0059413, "New York")

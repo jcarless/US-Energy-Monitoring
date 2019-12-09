@@ -50,7 +50,7 @@ with connection.cursor() as curs:
                 task_id=f"load_{city}_forecast",
                 python_callable=load_forecast,
                 provide_context=True,
-                op_kwargs={"lon": lon, "lat": lat},
+                op_kwargs={"lon": lon, "lat": lat, "city": city},
                 dag=dag,
             )
 
