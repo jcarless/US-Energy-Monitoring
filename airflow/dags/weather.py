@@ -12,22 +12,24 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.exceptions import AirflowException
 
 
-from operators.weather import load_forecast
+from operators.weather import load_forecast_s3
 
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime.utcnow() - timedelta(minutes=3),
+    "start_date": datetime.utcnow() - timedelta(minutes=70),
     "email": "carless.jerome@gmail.com",
     "email_on_failure": True,
     "email_on_retry": False,
     "retries": 1,
-    "retry_delay": timedelta(minutes=1),
+    "retry_delay": timedelta(minutes=5),
+    'provide_context': True,
+    "catchup": False,
 }
 
-dag = DAG("load_weather_forecast", default_args=default_args, catchup=False, schedule_interval='@hourly')
+dag = DAG("load_weather_forecast", default_args=default_args, schedule_interval='@hourly')
 
-postgres = PostgresHook(postgres_conn_id="rtf_postgres")
+postgres = PostgresHook(postgres_conn_id="rds_connection")
 connection = postgres.get_conn()
 
 with connection.cursor() as curs:
@@ -42,16 +44,12 @@ with connection.cursor() as curs:
 
         for city, lon, lat in cities:
             city = city.replace(" ", "_")
-            print("CITY: ", city)
-            print("LON: ", lon)
-            print("LAT: ", lat)
 
-            load_traffic_incident_details = PythonOperator(
+            load_weather_forecast = PythonOperator(
                 task_id=f"load_{city}_forecast",
-                python_callable=load_forecast,
-                provide_context=True,
+                python_callable=load_forecast_s3,
                 op_kwargs={"lon": lon, "lat": lat, "city": city},
                 dag=dag,
             )
 
-            load_traffic_incident_details
+            load_weather_forecast

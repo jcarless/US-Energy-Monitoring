@@ -1,0 +1,9 @@
+sudo: required
+serices:
+    - docker
+
+before_install:
+    - docker build -t jcarless/real-time-traffic .
+
+script:
+    - docker-compose run webserver bash echo test
