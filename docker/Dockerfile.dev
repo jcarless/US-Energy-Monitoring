@@ -71,6 +71,7 @@ RUN set -ex \
 COPY script/entrypoint.sh /entrypoint.sh
 COPY script/create_connections.py ${AIRFLOW_HOME}
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
+COPY credentials ${AIRFLOW_HOME}/credentials
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 RUN chmod +x entrypoint.sh
