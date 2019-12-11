@@ -12,7 +12,7 @@ services:
 
 
     webserver:
-        image: romanx/real-time-traffic:latest
+        image: jcarless/real-time-traffic:latest
         restart: always
         depends_on:
             - postgres

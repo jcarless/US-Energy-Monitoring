@@ -32,8 +32,6 @@ def load_forecast_s3(lon, lat, city, api_key=None, bucket_name='real-time-traffi
                    s3_connection=s3_connection,
                    kwargs=context)
 
-    print("KWARGS: ", context["ti"])
-
     load_to_s3(type="current",
                city=city,
                data=forecast_transformed,
@@ -84,8 +82,7 @@ def transform_forecast(forecast):
     current_weather = {
         "time_utc": currently["time"],
         "timezone": forecast["timezone"],
-        "lon": forecast["longitude"],
-        "lat": forecast["latitude"],
+        "location": (forecast["longitude"], forecast["latitude"]),
         "summary": currently["summary"],
         "nearest_storm_distance": currently["nearestStormDistance"],
         "visibility": currently["visibility"],

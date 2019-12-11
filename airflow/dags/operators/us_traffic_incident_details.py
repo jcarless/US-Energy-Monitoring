@@ -4,6 +4,8 @@ from datetime import datetime
 import io
 import gzip
 import json
+import unicodecsv as csv
+
 
 from airflow.hooks.S3_hook import S3Hook
 from airflow.hooks.base_hook import BaseHook
@@ -22,20 +24,97 @@ def load_traffic_incident_details(bounding_box=None, api_key=None, bucket_name='
         print("Loading Bound Box...")
         bounding_box = Variable.get("usa_bounding_box")
 
-    traffic_incident_details_data = get_traffic_details(bounding_box, api_key)
-    save_traffic_incident_details(traffic_incident_details_data, bucket_name, s3_connection)
+    data_raw, date = get_incedent_details(bounding_box, api_key)
+    data_transformed, date_transformed = transform_incedent_details(data_raw, date)
+    load_to_s3(data_transformed, date_transformed, bucket_name, s3_connection)
 
 
-def save_traffic_incident_details(data, bucket_name, s3_connection):
+def transform_incedent_details(data, date):
+    traffic_model_id = data["tm"]["@id"]
+
+    date_time = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S %Z").replace(second=0, microsecond=0).isoformat()
+
+    def category_switch(argument):
+        switcher = {
+            0: "Unknown",
+            1: "Accident",
+            2: "Fog",
+            3: "Dangerous Conditions",
+            4: "Rain",
+            5: "Ice",
+            6: "Jam",
+            7: "Lane Closed",
+            8: "Road Closed",
+            9: "Road Works",
+            10: "Wind",
+            11: "Flooding",
+            12: "Detour"
+        }
+        return switcher.get(argument, "Invalid Category")
+
+    def magnitude_switch(argument):
+        switcher = {
+            0: "Unknown",
+            1: "Minor",
+            2: "Moderate",
+            3: "Major",
+            4: "Undefined"
+        }
+        return switcher.get(argument, "Invalid Magnitude")
+
+    with io.BytesIO() as csvfile:
+        writer = csv.writer(csvfile, encoding="utf-8")
+        writer.writerow(["traffic_model_id",
+                         "incedent_id",
+                         "date",
+                         "location"
+                         "category",
+                         "magnitude",
+                         "description",
+                         "estimated_end",
+                         "cause",
+                         "from_street",
+                         "to_street",
+                         "length",
+                         "delay",
+                         "road"])
+
+        for cluster in data["tm"]["poi"]:
+            if "cpoi" in cluster:
+                for incedent in cluster["cpoi"]:
+
+                    writer.writerow([
+                        traffic_model_id,
+                        incedent["id"],
+                        date_time,
+                        (incedent["p"]["x"], incedent["p"]["y"]),
+                        category_switch(incedent["ic"]),
+                        magnitude_switch(incedent["ty"]),
+                        incedent["d"] if "d" in incedent else None,
+                        incedent["ed"] if "ed" in incedent else None,
+                        incedent["c"] if "c" in incedent else None,
+                        incedent["f"] if "f" in incedent else None,
+                        incedent["t"] if "t" in incedent else None,
+                        incedent["l"] if "l" in incedent else None,
+                        incedent["dl"] if "dl" in incedent else None,
+                        incedent["r"] if "r" in incedent else None
+                    ])
+
+        csvfile.seek(0)
+        zipped_file = gzip.compress(csvfile.getvalue(), compresslevel=9)
+
+        return zipped_file, date_time
+
+
+def load_to_s3(data, date, bucket_name, s3_connection):
     print("Uploading to s3...")
 
     try:
         s3 = S3Hook(aws_conn_id=s3_connection)
-        date_time = datetime.utcnow().replace(microsecond=0).isoformat()
 
-        key = f'traffic/incedent_details/raw/{date_time}.json.gz'
+        key = f'traffic/incedent_details/{date}.csv.gz'
 
-        s3.load_bytes(zip_data(data),
+        s3.load_bytes(data,
                       key=key,
                       bucket_name=bucket_name)
 
@@ -44,21 +123,7 @@ def save_traffic_incident_details(data, bucket_name, s3_connection):
         raise e
 
 
-def zip_data(data):
-    print("Zipping incedent details...")
-    try:
-        gz_body = io.BytesIO()
-        gz = gzip.GzipFile(None, 'wb', 9, gz_body)
-        gz.write(data.encode('utf-8'))
-        gz.close()
-        return gz_body.getvalue()
-
-    except BaseException as e:
-        print("Zip failed!")
-        raise e
-
-
-def get_traffic_details(bounding_box, api_key):
+def get_incedent_details(bounding_box, api_key):
 
     print("Getting incedent details...")
 
@@ -66,7 +131,7 @@ def get_traffic_details(bounding_box, api_key):
         PARAMS = {
             'projection': 'EPSG4326',
             'key': api_key,
-            'expandCluster': 'false'
+            'expandCluster': 'true'
         }
 
         style = "s3"
@@ -77,9 +142,9 @@ def get_traffic_details(bounding_box, api_key):
 
         r = requests.get(url=url, params=PARAMS)
         r.raise_for_status()
-        data = r.text
+        data = r.json()
 
-        return data
+        return data, r.headers["Date"]
     except BaseException as e:
         print("Failed to extract incedent details from API!")
         raise e
