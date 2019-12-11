@@ -4,11 +4,8 @@ services:
         image: postgres:9.6
         volumes:
             - ./postgres:/var/lib/postgresql/real-time-traffic
-        environment:
-            - POSTGRES_USER=airflow
-            - POSTGRES_PASSWORD=airflow
-            - POSTGRES_DB=airflow
-            - AIRFLOW__CORE__FERNET_KEY=0pwbs8AX4oncKZ7ZLxvx68rWIqmGXXGPamM9YEuOav8=
+        env_file:
+            - .env
 
 
     webserver:
@@ -16,10 +13,8 @@ services:
         restart: always
         depends_on:
             - postgres
-        environment:
-            - LOAD_EX=n
-            - EXECUTOR=Local
-            - AIRFLOW__CORE__FERNET_KEY=0pwbs8AX4oncKZ7ZLxvx68rWIqmGXXGPamM9YEuOav8=
+        env_file:
+            - .env
 
         volumes:
             - ../airflow/dags:/usr/local/airflow/dags

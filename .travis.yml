@@ -3,7 +3,11 @@ serices:
     - docker
 
 before_install:
-    - docker build -t jcarless/real-time-traffic docker/.
+    - docker build -t jcarless/real-time-traffic -f ./docker/Dockerfile ./docker
 
 script:
-    - docker-compose run webserver bash echo test
+    - docker-compose run webserver echo test
+
+after_success:
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password--stdin
+    - docker push jcarless/real-time-traffic
