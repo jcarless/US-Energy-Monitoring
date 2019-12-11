@@ -6,7 +6,7 @@ before_install:
     - docker build -t jcarless/real-time-traffic -f ./docker/Dockerfile ./docker
 
 script:
-    - docker-compose run webserver echo test
+    - -f ./docker/docker-compose.yml
 
 after_success:
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password--stdin
