@@ -1,0 +1,30 @@
+version: '3.7'
+services:
+    postgres:
+        image: postgres:9.6
+        volumes:
+            - ./postgres:/var/lib/postgresql/real-time-traffic
+        env_file:
+            - .env
+
+
+    webserver:
+        image: jcarless/real-time-traffic:latest
+        restart: always
+        depends_on:
+            - postgres
+        env_file:
+            - .env
+
+        volumes:
+            - ../airflow/dags:/usr/local/airflow/dags
+            # Uncomment to include custom plugins
+            # - ./plugins:/usr/local/airflow/plugins
+        ports:
+            - "8080:8080"
+        command: webserver
+        healthcheck:
+            test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+            interval: 30s
+            timeout: 30s
+            retries: 3
