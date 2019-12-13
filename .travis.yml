@@ -11,5 +11,17 @@ script:
     - docker-compose -f ./docker/docker-compose.yml run webserver echo test
 
 after_success:
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password--stdin
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
     - docker push jcarless/real-time-traffic
+
+deploy:
+    provider: elasticbeanstalk
+    region: us-east-2
+    app: real-time-traffic
+    env: RealTimeTraffic-env
+    bucket_name: elasticbeanstalk-us-east-2-803439283531
+    bucket_path: real-time-traffic
+    on:
+        branch: master
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_KEY
