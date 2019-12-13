@@ -14,7 +14,8 @@
             ],
             "links": [
                 "postgres"
-            ]
+            ],
+            "memory": 512
         },
         {
             "name": "postgres",
@@ -23,7 +24,8 @@
             "essential": true,
             "links": [
                 "airflow"
-            ]
+            ],
+            "memory": 256
         }
     ]
 }
