@@ -22,9 +22,6 @@
             "image": "postgres:9.6",
             "hostname": "postgres",
             "essential": true,
-            "links": [
-                "airflow"
-            ],
             "memory": 256
         }
     ]
