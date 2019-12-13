@@ -1,0 +1,29 @@
+{
+    "AWSEBDockerrunVersion": 2,
+    "containerDefinitions": [
+        {
+            "name": "airflow",
+            "image": "jcarless/real-time-traffic",
+            "hostname": "airflow",
+            "essential": false,
+            "portMappings": [
+                {
+                    "hostPort": 8080,
+                    "containerPort": 8080
+                }
+            ],
+            "links": [
+                "postgres"
+            ]
+        },
+        {
+            "name": "postgres",
+            "image": "postgres:9.6",
+            "hostname": "postgres",
+            "essential": true,
+            "links": [
+                "airflow"
+            ]
+        }
+    ]
+}
