@@ -5,7 +5,6 @@
             "name": "airflow",
             "image": "jcarless/real-time-traffic",
             "hostname": "airflow",
-            "essential": false,
             "portMappings": [
                 {
                     "hostPort": 8080,
@@ -15,13 +14,14 @@
             "links": [
                 "postgres"
             ],
+            "essential": true,
             "memory": 512
         },
         {
             "name": "postgres",
             "image": "postgres:9.6",
             "hostname": "postgres",
-            "essential": true,
+            "essential": false,
             "memory": 256
         }
     ]
