@@ -11,7 +11,6 @@ script:
     - docker-compose -f ./docker/docker-compose.yml run webserver echo test
 
 after_success:
-    - docker build -t jcarless/real-time-traffic ./docker
     # Log in to CLI
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
     - docker push jcarless/real-time-traffic
