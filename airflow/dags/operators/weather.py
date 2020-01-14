@@ -48,7 +48,7 @@ def load_to_s3(type, city, data, bucket_name, s3_connection, kwargs):
         date_time = datetime.datetime.fromtimestamp(data["time_utc"]).replace(second=0, microsecond=0).isoformat()
         key = f'traffic/weather/{city}/{type}/{date_time}.json.gz'
 
-        kwargs["ti"].xcom_push(key=type, value=date_time)
+        # kwargs["ti"].xcom_push(key=type, value=date_time)
 
         s3.load_bytes(zipped_data,
                       key=key,

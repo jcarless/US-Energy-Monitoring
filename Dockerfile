@@ -51,7 +51,7 @@ RUN set -ex \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install apache-airflow[crypto,celery,postgres,s3,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
+    && pip install apache-airflow[kubernetes,statsd,crypto,celery,postgres,s3,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
     && pip install 'redis==3.2' \
     && pip install requests \
     && pip install boto \
@@ -68,9 +68,10 @@ RUN set -ex \
     /usr/share/doc \
     /usr/share/doc-base
 
+# COPY ./airflow/dags ${AIRFLOW_HOME}/dags
 COPY script/entrypoint.sh /entrypoint.sh
 COPY script/create_connections.py ${AIRFLOW_HOME}
-COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
+COPY config ${AIRFLOW_USER_HOME}/config
 COPY credentials ${AIRFLOW_HOME}/credentials
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}

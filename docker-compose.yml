@@ -17,7 +17,7 @@ services:
             - .env
 
         volumes:
-            - ../airflow/dags:/usr/local/airflow/dags
+            - ./airflow/dags:/usr/local/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:
