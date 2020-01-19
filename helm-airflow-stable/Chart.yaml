@@ -1,0 +1,13 @@
+apiVersion: v1
+description:
+name: real-time-traffic
+version: 0.0.1
+appVersion: 0.0.1
+maintainers:
+  - name: jcarless
+    email: carless.jerome@gmail.com
+sources:
+  - https://airflow.apache.org/
+keywords:
+  - workflow
+  - dag

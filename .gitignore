@@ -110,5 +110,4 @@ pod.yaml
 secrets.tar
 credentials/connections.json
 helm-k8s-exec-outdated/
-helm-airflow-stable/
 helm/values.yaml
