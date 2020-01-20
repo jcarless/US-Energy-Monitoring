@@ -9,17 +9,11 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   LOAD_EX: "n"
-  ## Force UTC timezone
   TZ: Etc/UTC
   ## Postgres DB configuration
   POSTGRES_HOST: "{{ template "airflow.postgresql.fullname" . }}"
   POSTGRES_PORT: "{{ .Values.postgresql.service.port }}"
   POSTGRES_DB: "{{ .Values.postgresql.postgresDatabase }}"
-  # POSTGRES_HOST: "postgres"
-  # POSTGRES_PORT: "5432"
-  # POSTGRES_DB: "airflow"
-  # POSTGRES_USER: "airflow"
-  # POSTGRES_PASSWORD: "airflow"
   {{- if eq .Values.airflow.executor "Celery" }}
   ## Redis DB configuration
   REDIS_HOST: "{{ template "airflow.redis.host" . }}"
@@ -31,27 +25,30 @@ data:
   # For backwards compat with AF < 1.10, CELERY_CONCURRENCY got renamed to WORKER_CONCURRENCY
   AIRFLOW__CELERY__CELERY_CONCURRENCY: "{{ .Values.workers.celery.instances }}"
   {{- end }}
-  {{- if eq .Values.airflow.executor "Kubernetes" }}
+  {{- if eq .Values.airflow.executor "Kubernetes" }} 
   AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY: "{{ .Values.airflow.image.repository }}"
   AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: "{{ .Values.airflow.image.tag }}"
   AIRFLOW__KUBERNETES__CATCHUP_BY_DEFAULT: "False"
-  AIRFLOW__KUBERNETES__REMOTE_LOGGING: "False"
-  AIRFLOW__KUBERNETES__REMOTE_LOG_CONN_ID: ""
-  AIRFLOW__KUBERNETES__REMOTE_BASE_LOG_FOLDER: ""
   AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: "{{ include "airflow.fullname" . }}-env"
   AIRFLOW__KUBERNETES__DAGS_IN_IMAGE: "True"
   AIRFLOW__KUBERNETES__DELETE_WORKER_PODS: "True"
-  # AIRFLOW__KUBERNETES__NAMESPACE: "{{ .Release.Namespace }}"
+  AIRFLOW__KUBERNETES__NAMESPACE: "{{ .Release.Namespace }}"
+  AIRFLOW__SCHEDULER__STATSD_ON: "False"
+  AIRFLOW__CORE__DAG_PROCESSOR_MANAGER_LOG_LOCATION: /usr/local/airflow/logs/dag_processor_manager/dag_processor_manager.log
   # AIRFLOW__WEBSERVER__ACCESS_LOGFILE: /usr/local/airflow/logs/web.log
   # AIRFLOW__WEBSERVER__ERROR_LOGFILE: /usr/local/airflow/logs/web_error.log
-  # AIRFLOW__SCHEDULER__STATSD_ON: "False"
-  # AIRFLOW__CORE__DAG_PROCESSOR_MANAGER_LOG_LOCATION: /usr/local/airflow/logs/dag_processor_manager/dag_processor_manager.log
-  # AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://airflow:airflow@postgres:5432/airflow"
   {{- end }}
   # Configure puckel's docker-airflow entrypoint
   EXECUTOR: "{{ .Values.airflow.executor }}"
-  FERNET_KEY: "{{ .Values.airflow.fernetKey }}"
+  AIRFLOW__CORE__FERNET_KEY: "{{ .Values.airflow.fernetKey }}"
   DO_WAIT_INITDB: "false"
+  # Remote Logging
+  AWS_ACCESS_KEY_ID: "{{ .Values.aws.access_key }}"
+  AWS_SECRET_ACCESS_KEY: "{{ .Values.aws.secret_key }}"
+  AIRFLOW__CORE__REMOTE_LOGGING: "{{ .Values.logs.remote_logging.enable }}"
+  AIRFLOW__CORE__REMOTE_BASE_LOG_FOLDER: "{{ .Values.logs.remote_logging.base_folder }}"
+  AIRFLOW__CORE__REMOTE_LOG_CONN_ID: "{{ .Values.logs.remote_logging.conn_id }}"
+  encrypt_s3_logs: "False"
   ## Custom Airflow settings
   AIRFLOW__CORE__DONOT_PICKLE: "{{ .Values.dags.doNotPickle }}"
   AIRFLOW__CORE__DAGS_FOLDER: "{{ .Values.dags.path }}"
