@@ -56,6 +56,11 @@ RUN set -ex \
     && pip install requests \
     && pip install boto \
     && pip install boto3 \
+    && pip install --upgrade google-cloud-bigquery \
+    && pip install --upgrade google-cloud-storage \
+    && pip install httplib2 --upgrade \
+    && pip install --upgrade google_auth_httplib2 \
+    && pip install --upgrade google-api-python-client\
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
@@ -68,11 +73,9 @@ RUN set -ex \
     /usr/share/doc \
     /usr/share/doc-base
 
-# COPY ./airflow/dags ${AIRFLOW_HOME}/dags
 COPY script/entrypoint.sh /entrypoint.sh
 COPY script/create_connections.py ${AIRFLOW_HOME}
 COPY config ${AIRFLOW_USER_HOME}/config
-COPY credentials ${AIRFLOW_HOME}/credentials
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 RUN chmod +x entrypoint.sh

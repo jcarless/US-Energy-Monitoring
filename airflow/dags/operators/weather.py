@@ -2,22 +2,32 @@ import requests
 import pytz
 import datetime
 import io
+import os
 import csv
 import json
 import gzip
+import logging
 
+from google.cloud import storage
 
 from airflow.hooks.base_hook import BaseHook
 from airflow.hooks.S3_hook import S3Hook
 from airflow.hooks.postgres_hook import PostgresHook
+from airflow.models import Variable
+
+
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S')
 
 URL = "https://api.darksky.net/forecast"
 
 
-def load_forecast_s3(lon, lat, city, api_key=None, bucket_name='real-time-traffic', s3_connection="s3_connection", **context):
-    if api_key is None:
-        print("Loading API Key...")
-        api_key = BaseHook.get_connection("dark_sky").password
+def load_forecast(lon, lat, city):
+
+    api_key = BaseHook.get_connection("dark_sky").password
+    bucket_name = Variable.get("gcs_bucket")
 
     forecast = get_forecast(lon, lat, api_key)
     forecast_transformed = transform_forecast(forecast)
@@ -25,19 +35,15 @@ def load_forecast_s3(lon, lat, city, api_key=None, bucket_name='real-time-traffi
     if hasattr(forecast, 'alerts'):
         alerts_transformed = transform_alerts(forecast)
 
-        load_to_s3(type="alerts",
+        load_to_gcs(type="alerts",
                    city=city,
                    data=alerts_transformed,
-                   bucket_name=bucket_name,
-                   s3_connection=s3_connection,
-                   kwargs=context)
+                   bucket_name=bucket_name)
 
-    load_to_s3(type="current",
-               city=city,
-               data=forecast_transformed,
-               bucket_name=bucket_name,
-               s3_connection=s3_connection,
-               kwargs=context)
+    load_to_gcs(type="current", 
+                city=city, 
+                data=forecast_transformed, 
+                bucket_name=bucket_name)
 
 
 def load_to_s3(type, city, data, bucket_name, s3_connection, kwargs):
@@ -59,8 +65,49 @@ def load_to_s3(type, city, data, bucket_name, s3_connection, kwargs):
         raise e
 
 
+def load_to_gcs(type, city, data, bucket_name):
+
+
+    try:
+        logging.info("Loading data to GCS...")
+
+        zipped_data = zip_json(data)
+        client = authenticate_client()
+        date_time = datetime.datetime.fromtimestamp(data["time_utc"]).replace(second=0, microsecond=0).isoformat()
+        key = f'traffic/weather/{city}/{type}/{date_time}.jsonl.gz'
+
+        bucket = client.get_bucket(bucket_name)
+        blob = bucket.blob(key)
+        blob.upload_from_string(zipped_data)
+
+    except BaseException as e:
+        logging.error("Failed to load data to GCS!")
+        raise e
+
+
+def authenticate_client():
+    """
+    returns an authenticated client
+    :return:
+        a bigquery.Client()
+    """
+
+    logging.info('Authenticating GCS...')
+
+    config = Variable.get("bigquery", deserialize_json=True)
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config['credentials_path']
+
+    try:
+        client = storage.Client()
+    except BaseException as e:
+        logging.error('Could not authenticate, {}'.format(e))
+    else:
+        logging.info('GCS authenticated')
+        return client
+
+
 def get_forecast(lon, lat, api_key):
-    print("Getting weather forecast...")
+    logging.info("Getting weather forecast...")
 
     try:
         url = f"{URL}/{api_key}/{lon},{lat}"
@@ -70,19 +117,25 @@ def get_forecast(lon, lat, api_key):
 
         return data
     except BaseException as e:
-        print("Failed to extract forecast from API!")
+        logging.error("Failed to extract forecast from API!")
         raise e
 
 
 def transform_forecast(forecast):
-    print("Transforming Current Weather...")
+    logging.info("Transforming Current Weather...")
 
     currently = forecast["currently"]
 
     current_weather = {
         "time_utc": currently["time"],
         "timezone": forecast["timezone"],
-        "location": (forecast["longitude"], forecast["latitude"]),
+        "location": {
+            "type": "Point",
+            "coordinates": [
+                forecast["latitude"],
+                forecast["longitude"]
+            ]
+        },
         "summary": currently["summary"],
         "nearest_storm_distance": currently["nearestStormDistance"],
         "visibility": currently["visibility"],
@@ -102,13 +155,18 @@ def transform_forecast(forecast):
 
 
 def transform_alerts(forecast):
-    print("Transforming Alerts...")
+    logging.info("Transforming Alerts...")
 
     alerts = forecast["alerts"]
 
     alerts_transformed = {
-        "lon": forecast["longitude"],
-        "lat": forecast["latitude"],
+        "location": {
+            "type": "Point",
+            "coordinates": [
+                forecast["latitude"],
+                forecast["longitude"]
+            ]
+        },
         "time_utc": alerts["time"],
         "expires": datetime.datetime.fromtimestamp(alerts["expires"]),
         "title": alerts["title"],
@@ -118,24 +176,8 @@ def transform_alerts(forecast):
 
     return alerts_transformed
 
-
-# def load_forecast_rds(s3_connection="s3_connections", **kwargs):
-#     s3 = S3Hook(aws_conn_id=s3_connection)
-#     postgres = PostgresHook(postgres_conn_id=postgres_conn)
-#     s3_data = Variable.get("s3_data", deserialize_json=True)
-#     export_date = kwargs["ti"].xcom_pull(key=table_name, task_ids="write_to_s3")
-
-#     key = f"{s3_data['raw']}/gsc/{export_date}/{table_name}.tsv"
-
-#     s3_response = s3.get_object(Bucket=s3_data['bucket'], Key=key)
-
-#     streaming_body = s3_response["Body"].read()
-
-#     file = io.StringIO(streaming_body.decode("utf-8"))
-
-
 def zip_json(data):
-    print("Zipping data...")
+    logging.info("Zipping data...")
     try:
         gz_body = io.BytesIO()
         gz = gzip.GzipFile(None, 'wb', 9, gz_body)
@@ -144,9 +186,9 @@ def zip_json(data):
         return gz_body.getvalue()
 
     except BaseException as e:
-        print("Zip failed!")
+        logging.error("Zip failed!")
         raise e
 
 
 if __name__ == "__main__":
-    load_forecast_s3(40.7127837, -74.0059413, "New York")
+    load_forecast(40.7127837, -74.0059413, "New York")

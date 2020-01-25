@@ -12,7 +12,7 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.exceptions import AirflowException
 
 
-from operators.weather import load_forecast_s3
+from operators.weather import load_forecast
 
 default_args = {
     "owner": "airflow",
@@ -47,7 +47,7 @@ with connection.cursor() as curs:
 
             load_weather_forecast = PythonOperator(
                 task_id=f"load_{city}_forecast",
-                python_callable=load_forecast_s3,
+                python_callable=load_forecast,
                 op_kwargs={"lon": lon, "lat": lat, "city": city},
                 dag=dag,
             )
