@@ -51,10 +51,8 @@ def load_to_s3(type, city, data, bucket_name, s3_connection, kwargs):
         print("Loading data to s3...")
         zipped_data = zip_json(data)
         s3 = S3Hook(aws_conn_id=s3_connection)
-        date_time = datetime.datetime.fromtimestamp(data["time_utc"]).replace(second=0, microsecond=0).isoformat()
+        date_time = datetime.datetime.fromtimestamp(data["ts"]).replace(second=0, microsecond=0).isoformat()
         key = f'traffic/weather/{city}/{type}/{date_time}.json.gz'
-
-        # kwargs["ti"].xcom_push(key=type, value=date_time)
 
         s3.load_bytes(zipped_data,
                       key=key,
@@ -73,7 +71,7 @@ def load_to_gcs(type, city, data, bucket_name):
 
         zipped_data = zip_json(data)
         client = authenticate_client()
-        date_time = datetime.datetime.fromtimestamp(data["time_utc"]).replace(second=0, microsecond=0).isoformat()
+        date_time = datetime.datetime.fromtimestamp(data["ts"]).replace(second=0, microsecond=0).isoformat()
         key = f'traffic/weather/{city}/{type}/{date_time}.jsonl.gz'
 
         bucket = client.get_bucket(bucket_name)
@@ -126,16 +124,13 @@ def transform_forecast(forecast):
 
     currently = forecast["currently"]
 
+    location = { "0": {"type": "Point","coordinates":[forecast["latitude"],forecast["longitude"]]}}
+    location = create_jsonlines(location)
+
     current_weather = {
-        "time_utc": currently["time"],
+        "ts": currently["time"],
         "timezone": forecast["timezone"],
-        "location": {
-            "type": "Point",
-            "coordinates": [
-                forecast["latitude"],
-                forecast["longitude"]
-            ]
-        },
+        "location": location,
         "summary": currently["summary"],
         "nearest_storm_distance": currently["nearestStormDistance"],
         "visibility": currently["visibility"],
@@ -146,7 +141,7 @@ def transform_forecast(forecast):
         "uv_index": currently["uvIndex"],
         "cloud_cover": currently["cloudCover"],
         "precip_type": currently["precipType"] if hasattr(currently, 'precipType') else None,
-        "precip_probability": currently["precipProbability"],
+        "precip_prob": currently["precipProbability"],
         "precip_intensity": currently["precipIntensity"],
         "precip_intensity_error": currently["precipIntensityError"] if hasattr(currently, 'precipIntensityError') else None
     }
@@ -159,15 +154,12 @@ def transform_alerts(forecast):
 
     alerts = forecast["alerts"]
 
+    location = {"0": {"type": "Point", "coordinates": [alerts["latitude"], alerts["longitude"]]}}
+    location = create_jsonlines(location)
+
     alerts_transformed = {
-        "location": {
-            "type": "Point",
-            "coordinates": [
-                forecast["latitude"],
-                forecast["longitude"]
-            ]
-        },
-        "time_utc": alerts["time"],
+        "location": location,
+        "ts": alerts["time"],
         "expires": datetime.datetime.fromtimestamp(alerts["expires"]),
         "title": alerts["title"],
         "description": alerts["description"],
@@ -189,6 +181,14 @@ def zip_json(data):
         logging.error("Zip failed!")
         raise e
 
+def create_jsonlines(original):
+
+    if isinstance(original, str):
+        original = json.loads(original)
+
+    return '\n'.join([json.dumps(original[outer_key], sort_keys=True)
+                        for outer_key in sorted(original.keys(),
+                                                key=lambda x: int(x))])
 
 if __name__ == "__main__":
-    load_forecast(40.7127837, -74.0059413, "New York")
+    load_forecast(40.7127837, -74.0059413, "New_York")
