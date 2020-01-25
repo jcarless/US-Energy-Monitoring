@@ -25,13 +25,13 @@ def load_traffic_incident_details():
 
     with io.BytesIO() as csvfile:
 
-        data_raw, date = get_incedent_details(bounding_box, api_key)
+        data_raw, date = get_incident_details(bounding_box, api_key)
 
-        csvfile, date_transformed = transform_incedent_details(csvfile, data_raw, date)
+        csvfile, date_transformed = transform_incident_details(csvfile, data_raw, date)
 
         load_to_gcs(csvfile, date_transformed, bucket_name)
 
-def transform_incedent_details(csvfile, data, date):
+def transform_incident_details(csvfile, data, date):
     traffic_model_id = data["tm"]["@id"]
 
     date_time = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S %Z").replace(second=0, microsecond=0).isoformat()
@@ -94,7 +94,7 @@ def load_to_gcs(csvfile, date_transformed, bucket_name):
         zipped_file = gzip.compress(csvfile.getvalue(), compresslevel=9)
 
         client = authenticate_client()
-        key = f'traffic/incedent_details/{date_transformed}.csv.gz'
+        key = f'traffic/incident_details/{date_transformed}.csv.gz'
 
         bucket = client.get_bucket(bucket_name)
         blob = bucket.blob(key)
@@ -110,7 +110,7 @@ def load_to_s3(data, date, bucket_name, s3_connection):
     try:
         s3 = S3Hook(aws_conn_id=s3_connection)
 
-        key = f'traffic/incedent_details/{date}.csv.gz'
+        key = f'traffic/incident_details/{date}.csv.gz'
 
         s3.load_bytes(data,
                       key=key,
@@ -155,7 +155,7 @@ def load_to_bigquery(data, dataset_id, table_id, bigquery_creds):
 
     logging.info("Loaded {} rows into {}:{}.".format(job.output_rows, dataset_id, table_id))
 
-def get_incedent_details(bounding_box, api_key):
+def get_incident_details(bounding_box, api_key):
 
     logging.info("Getting incedent details...")
 

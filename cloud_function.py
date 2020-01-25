@@ -33,7 +33,6 @@ def load_to_bigquery(data, context):
             job_config.source_format = bigquery.SourceFormat.NEWLINE_DELIMITED_JSON
             path = sperator.join([data_split[0], data_split[1], data_split[2], data_split[3], data_split[4]])
             uri = f"gs://real-time-traffic/{path}"
-            print("URI: ", uri)
             load_job = client.load_table_from_uri(
                 uri, dataset_ref.table(table), job_config=job_config
             )  # API request
@@ -42,6 +41,39 @@ def load_to_bigquery(data, context):
             print("Job finished.")
             destination_table = client.get_table(dataset_ref.table(table))
             print("Loaded {} rows.".format(destination_table.num_rows))
+
+        if data_split[1] == "incident_details":
+            print("Processing Incedent Details File...")
+            table = "incident_details"
+            job_config.schema = [
+                bigquery.SchemaField("traffic_model_id", "INTEGER", "REQUIRED"),
+                bigquery.SchemaField("incident_id", "STRING", "REQUIRED"),
+                bigquery.SchemaField("ts", "TIMESTAMP", "REQUIRED"),
+                bigquery.SchemaField("location", "GEOGRAPHY", "REQUIRED"),
+                bigquery.SchemaField("category", "STRING", "REQUIRED"),
+                bigquery.SchemaField("magnitude", "STRING", "REQUIRED"),
+                bigquery.SchemaField("description", "STRING"),
+                bigquery.SchemaField("estimated_end", "TIMESTAMP"),
+                bigquery.SchemaField("cause", "STRING"),
+                bigquery.SchemaField("from_street", "STRING"),
+                bigquery.SchemaField("to_street", "STRING"),
+                bigquery.SchemaField("length", "INTEGER"),
+                bigquery.SchemaField("delay", "INTEGER"),
+                bigquery.SchemaField("road", "STRING")
+            ]
+            job_config.skip_leading_rows = 1
+            job_config.source_format = bigquery.SourceFormat.CSV
+            path = sperator.join([data_split[0], data_split[1], data_split[2]])
+            uri = f"gs://real-time-traffic/{path}"
+            load_job = client.load_table_from_uri(
+                uri, dataset_ref.table(table), job_config=job_config
+            )  # API request
+            print("Starting job {}".format(load_job.job_id))
+            load_job.result()  # Waits for table load to complete.
+            print("Job finished.")
+            destination_table = client.get_table(dataset_ref.table(table))
+            print("Loaded {} rows.".format(destination_table.num_rows))
+
 
 if __name__ == "__main__":
 
