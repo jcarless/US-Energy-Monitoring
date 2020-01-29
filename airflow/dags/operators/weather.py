@@ -16,15 +16,15 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import Variable
 
 
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.INFO,
-    datefmt='%Y-%m-%d %H:%M:%S')
+# logging.basicConfig(
+#     format='%(asctime)s %(levelname)-8s %(message)s',
+#     level=logging.INFO,
+#     datefmt='%Y-%m-%d %H:%M:%S')
 
 URL = "https://api.darksky.net/forecast"
 
 
-def load_forecast(lon, lat, city):
+def load_forecast(lon, lat, city, **kwargs):
 
     api_key = BaseHook.get_connection("dark_sky").password
     bucket_name = Variable.get("gcs_bucket")
@@ -36,13 +36,13 @@ def load_forecast(lon, lat, city):
         alerts_transformed = transform_alerts(forecast)
 
         load_to_gcs(type="alerts",
-                   city=city,
-                   data=alerts_transformed,
-                   bucket_name=bucket_name)
+                    city=city,
+                    data=alerts_transformed,
+                    bucket_name=bucket_name)
 
-    load_to_gcs(type="current", 
-                city=city, 
-                data=forecast_transformed, 
+    load_to_gcs(type="current",
+                city=city,
+                data=forecast_transformed,
                 bucket_name=bucket_name)
 
 
@@ -65,14 +65,13 @@ def load_to_s3(type, city, data, bucket_name, s3_connection, kwargs):
 
 def load_to_gcs(type, city, data, bucket_name):
 
-
     try:
         logging.info("Loading data to GCS...")
 
         zipped_data = zip_json(data)
         client = authenticate_client()
         date_time = datetime.datetime.fromtimestamp(data["ts"]).replace(second=0, microsecond=0).isoformat()
-        key = f'traffic/weather/{city}/{type}/{date_time}.jsonl.gz'
+        key = f'traffic/weather/{city}/{type}/{date_time}.json.gz'
 
         bucket = client.get_bucket(bucket_name)
         blob = bucket.blob(key)
@@ -124,7 +123,7 @@ def transform_forecast(forecast):
 
     currently = forecast["currently"]
 
-    location = { "0": {"type": "Point","coordinates":[forecast["latitude"],forecast["longitude"]]}}
+    location = {"0": {"type": "Point", "coordinates": [forecast["latitude"], forecast["longitude"]]}}
     location = create_jsonlines(location)
 
     current_weather = {
@@ -168,6 +167,7 @@ def transform_alerts(forecast):
 
     return alerts_transformed
 
+
 def zip_json(data):
     logging.info("Zipping data...")
     try:
@@ -181,14 +181,16 @@ def zip_json(data):
         logging.error("Zip failed!")
         raise e
 
+
 def create_jsonlines(original):
 
     if isinstance(original, str):
         original = json.loads(original)
 
     return '\n'.join([json.dumps(original[outer_key], sort_keys=True)
-                        for outer_key in sorted(original.keys(),
-                                                key=lambda x: int(x))])
+                      for outer_key in sorted(original.keys(),
+                                              key=lambda x: int(x))])
+
 
 if __name__ == "__main__":
     load_forecast(40.7127837, -74.0059413, "New_York")

@@ -20,6 +20,7 @@ services:
             - ./airflow/dags:/usr/local/airflow/dags
             - ./credentials:/usr/local/airflow/credentials
             - ./config:/usr/local/airflow/config
+            - ./script:/usr/local/airflow/script
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:

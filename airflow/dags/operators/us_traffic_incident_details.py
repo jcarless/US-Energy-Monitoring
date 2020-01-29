@@ -1,3 +1,4 @@
+from os.path import isfile, join
 import logging
 import requests
 from datetime import datetime
@@ -19,9 +20,8 @@ URL = f"https://api.tomtom.com/traffic/services"
 def load_traffic_incident_details():
 
     api_key = BaseHook.get_connection("tomtom_api").password
-    bounding_box = Variable.get("usa_bounding_box", deserialize_json=True)["Val"]
+    bounding_box = Variable.get("usa_bounding_box")
     bucket_name = Variable.get("gcs_bucket")
-
 
     with io.BytesIO() as csvfile:
 
@@ -31,6 +31,7 @@ def load_traffic_incident_details():
 
         load_to_gcs(csvfile, date_transformed, bucket_name)
 
+
 def transform_incident_details(csvfile, data, date):
     traffic_model_id = data["tm"]["@id"]
 
@@ -38,28 +39,28 @@ def transform_incident_details(csvfile, data, date):
 
     writer = csv.writer(csvfile, encoding="utf-8")
     writer.writerow(["traffic_model_id",
-                        "incedent_id",
-                        "date",
-                        "location",
-                        "category",
-                        "magnitude",
-                        "description",
-                        "estimated_end",
-                        "cause",
-                        "from_street",
-                        "to_street",
-                        "length",
-                        "delay",
-                        "road"])
+                     "incedent_id",
+                     "date",
+                     "location",
+                     "category",
+                     "magnitude",
+                     "description",
+                     "estimated_end",
+                     "cause",
+                     "from_street",
+                     "to_street",
+                     "length",
+                     "delay",
+                     "road"])
 
     for cluster in data["tm"]["poi"]:
         if "cpoi" in cluster:
             for incedent in cluster["cpoi"]:
 
                 geo_json = {
-                    "type": "Point", 
+                    "type": "Point",
                     "coordinates": [incedent["p"]["x"], incedent["p"]["y"]]
-                    }
+                }
 
                 estimated_end = incedent["ed"] if "ed" in incedent else None
 
@@ -104,6 +105,7 @@ def load_to_gcs(csvfile, date_transformed, bucket_name):
         logging.error("Failed to load data to GCS!")
         raise e
 
+
 def load_to_s3(data, date, bucket_name, s3_connection):
     logging.info("Uploading to s3...")
 
@@ -131,8 +133,8 @@ def authenticate_client():
     logging.info('authenticating with GCS...')
 
     config = Variable.get("bigquery", deserialize_json=True)
-    
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config['credentials_path']
+
     try:
         client = storage.Client()
     except BaseException as e:
@@ -140,6 +142,7 @@ def authenticate_client():
     else:
         logging.info('GCS authenticated')
         return client
+
 
 def load_to_bigquery(data, dataset_id, table_id, bigquery_creds):
     client = authenticate_client(bigquery_creds)
@@ -154,6 +157,7 @@ def load_to_bigquery(data, dataset_id, table_id, bigquery_creds):
     job.result()  # Waits for table load to complete.
 
     logging.info("Loaded {} rows into {}:{}.".format(job.output_rows, dataset_id, table_id))
+
 
 def get_incident_details(bounding_box, api_key):
 
@@ -181,6 +185,7 @@ def get_incident_details(bounding_box, api_key):
         logging.error("Failed to extract incedent details from API!")
         raise e
 
+
 def category_switch(argument):
     switcher = {
         0: "Unknown",
@@ -198,6 +203,7 @@ def category_switch(argument):
         12: "Detour"
     }
     return switcher.get(argument, "Invalid Category")
+
 
 def magnitude_switch(argument):
     switcher = {

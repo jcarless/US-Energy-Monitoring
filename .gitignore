@@ -110,3 +110,4 @@ secrets.tar
 credentials/*
 helm-k8s-exec-outdated/
 helm/values.yaml
+airflow/dags/google_credentials.json

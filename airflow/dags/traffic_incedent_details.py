@@ -16,9 +16,9 @@ default_args = {
     "depends_on_past": False,
     "start_date": datetime.utcnow() - timedelta(minutes=3),
     "email": "carless.jerome@gmail.com",
-    "email_on_failure": True,
+    "email_on_failure": False,
     "email_on_retry": False,
-    "retries": 1,
+    "retries": 0,
     "retry_delay": timedelta(minutes=1),
 }
 
@@ -27,7 +27,6 @@ dag = DAG("load_traffic_incident_details", default_args=default_args, catchup=Fa
 load_traffic_incident_details = PythonOperator(
     task_id="load_traffic_incident_details",
     python_callable=load_traffic_incident_details,
-    provide_context=True,
     dag=dag,
 )
 

@@ -74,7 +74,6 @@ RUN set -ex \
     /usr/share/doc-base
 
 COPY script/entrypoint.sh /entrypoint.sh
-COPY script/create_connections.py ${AIRFLOW_HOME}
 COPY config ${AIRFLOW_USER_HOME}/config
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
