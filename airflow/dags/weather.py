@@ -11,12 +11,6 @@ from airflow.utils import dates
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.exceptions import AirflowException
 from usr.local.airflow.airflow.dags.weatherOperators import load_forecast
-import os
-
-dirpath = os.getcwd()
-print("current directory is : " + dirpath)
-foldername = os.path.basename(dirpath)
-print("Directory name is : " + foldername)
 
 
 default_args = {
