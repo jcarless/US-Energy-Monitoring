@@ -10,7 +10,7 @@ from airflow.models import Variable
 from airflow.utils import dates
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.exceptions import AirflowException
-from airflow.airflow.dags.weatherOperators import load_forecast
+from usr.local.airflow.airflow.dags.weatherOperators import load_forecast
 import os
 
 dirpath = os.getcwd()
