@@ -13,7 +13,7 @@ from airflow.exceptions import AirflowException
 
 try:
     import weatherOperators.load_forecast
-except expression as e:
+except BaseException as e:
 
     print("FAILLLLL: ")
     import os
