@@ -12,7 +12,7 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.exceptions import AirflowException
 
 try:
-    import weatherOperators.load_forecast
+    from airflow.dags.weatherOperators import load_forecast
 except BaseException as e:
 
     print("FAILLLLL: ")
@@ -22,6 +22,9 @@ except BaseException as e:
     print("current directory is : " + dirpath)
     foldername = os.path.basename(dirpath)
     print("Directory name is : " + foldername)
+
+    arr = os.listdir()
+    print("DIR: ", arr)
 
 
 default_args = {
