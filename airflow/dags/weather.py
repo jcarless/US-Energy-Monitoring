@@ -23,7 +23,7 @@ except BaseException as e:
     foldername = os.path.basename(dirpath)
     print("Directory name is : " + foldername)
 
-    arr = os.listdir()
+    arr = os.listdir("airflow")
     print("DIR: ", arr)
 
 from airflow.dags.weatherOperators import load_forecast
