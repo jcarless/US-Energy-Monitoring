@@ -1,3 +1,4 @@
+import weather
 import os
 
 dirpath = os.getcwd()
