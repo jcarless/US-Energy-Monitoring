@@ -9,7 +9,7 @@ services:
 
 
     webserver:
-        image: jcarless/real-time-traffic:latest
+        image: jcarless/real-time-traffic:v0.0.2
         restart: always
         depends_on:
             - postgres
@@ -17,7 +17,10 @@ services:
             - .env
 
         volumes:
-            - ../airflow/dags:/usr/local/airflow/dags
+            - ./airflow/dags:/usr/local/airflow/dags
+            - ./credentials:/usr/local/airflow/credentials
+            - ./config:/usr/local/airflow/config
+            - ./script:/usr/local/airflow/script
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:

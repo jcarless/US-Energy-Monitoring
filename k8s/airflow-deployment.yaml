@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: airflow-deployment
+spec:
+    replicas: 3
+    selector:
+        matchLabels:
+            component: airflow
+    template:
+        metadata:
+            labels:
+                component: airflow
+        spec:
+            containers: 
+                - name: airflow
+                  image: jcarless/real-time-traffic
+                  ports:
+                    - containerPort: 8080
+                  env:
+                    - name: POSTGRES_USER
+                      value: airflow
+                    - name: POSTGRES_HOST
+                      value: postgres-cluster-ip-service
+                    - name: POSTGRES_PORT
+                      value: '5432'
+                    - name: POSTGRES_DB
+                      value: airflow
+                    - name: POSTGRES_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                            name: pgpassword
+                            key: PGPASSWORD
+                    - name: AIRFLOW__CORE__FERNET_KEY
+                      valueFrom:
+                        secretKeyRef:
+                            name: fernetkey
+                            key: AIRFLOW__CORE__FERNET_KEY
+                    - name: LOAD_EX
+                      value: 'n'
+                    - name: EXECUTOR
+                      value: Kubernetes
+    

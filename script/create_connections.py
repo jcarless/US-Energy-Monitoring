@@ -3,7 +3,7 @@ import json
 
 
 def main():
-    with open('credentials/connections.json', 'r') as infile:
+    with open('../credentials/connections.json', 'r') as infile:
         connections = json.load(infile)
 
     airflow_call = ['airflow', 'connections', '--add', '--conn_id']

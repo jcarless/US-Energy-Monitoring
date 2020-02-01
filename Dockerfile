@@ -51,11 +51,16 @@ RUN set -ex \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install apache-airflow[crypto,celery,postgres,s3,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
+    && pip install apache-airflow[kubernetes,statsd,crypto,celery,postgres,s3,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
     && pip install 'redis==3.2' \
     && pip install requests \
     && pip install boto \
     && pip install boto3 \
+    && pip install --upgrade google-cloud-bigquery \
+    && pip install --upgrade google-cloud-storage \
+    && pip install httplib2 --upgrade \
+    && pip install --upgrade google_auth_httplib2 \
+    && pip install --upgrade google-api-python-client\
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
@@ -69,9 +74,7 @@ RUN set -ex \
     /usr/share/doc-base
 
 COPY script/entrypoint.sh /entrypoint.sh
-COPY script/create_connections.py ${AIRFLOW_HOME}
-COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
-COPY credentials ${AIRFLOW_HOME}/credentials
+COPY config ${AIRFLOW_USER_HOME}/config
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 RUN chmod +x entrypoint.sh

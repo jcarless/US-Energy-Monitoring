@@ -2,6 +2,7 @@
 Code that goes along with the Airflow located at:
 http://airflow.readthedocs.org/en/latest/tutorial.html
 """
+from operators.us_traffic_incident_details import load_traffic_incident_details
 from datetime import datetime, timedelta
 
 from airflow import DAG
@@ -9,7 +10,7 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.models import Variable
 from airflow.utils import dates
 
-from operators.us_traffic_incident_details import load_traffic_incident_details
+print("TESTTTTTTTTT")
 
 default_args = {
     "owner": "airflow",
