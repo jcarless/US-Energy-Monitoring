@@ -3,7 +3,7 @@ Code that goes along with the Airflow located at:
 http://airflow.readthedocs.org/en/latest/tutorial.html
 """
 
-from weatherOperator.py import load_forecast
+from dags.weatherOperators import load_forecast
 from airflow.exceptions import AirflowException
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.utils import dates
