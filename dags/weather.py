@@ -1,70 +1,25 @@
-"""
-Code that goes along with the Airflow located at:
-http://airflow.readthedocs.org/en/latest/tutorial.html
-"""
-from airflow.hooks.S3_hook import S3Hook
-from airflow.hooks.base_hook import BaseHook
-from google.cloud import storage
-import logging
-import gzip
-import json
-import csv
-import os
-import io
-import datetime
-import pytz
-import requests
-# from operators.weather import load_forecast
-from datetime import datetime, timedelta
-
-from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
-from airflow.models import Variable
-from airflow.utils import dates
-from airflow.hooks.postgres_hook import PostgresHook
 from airflow.exceptions import AirflowException
+from airflow.utils import dates
+from airflow.operators.python_operator import PythonOperator
+from airflow import DAG
+from datetime import datetime, timedelta
+from operators.weather import load_forecast
+import requests
+import pytz
+import datetime
+import io
+import os
+import csv
+import json
+import gzip
+import logging
 
-print("TESTTTTTTTTT2")
+from google.cloud import storage
 
-default_args = {
-    "owner": "airflow",
-    "depends_on_past": False,
-    "start_date": datetime.utcnow() - timedelta(minutes=70),
-    "email": "carless.jerome@gmail.com",
-    "email_on_failure": False,
-    "email_on_retry": False,
-    "retries": 1,
-    "retry_delay": timedelta(minutes=5),
-    'provide_context': True,
-    "catchup": False,
-}
-
-dag = DAG("load_weather_forecast", default_args=default_args, schedule_interval='@hourly')
-
-postgres = PostgresHook(postgres_conn_id="rds_connection")
-connection = postgres.get_conn()
-
-with connection.cursor() as curs:
-    try:
-        query = "SELECT city_name, lon, lat FROM cities"
-        curs.execute(query)
-    except BaseException as e:
-        connection.rollback()
-        raise AirflowException(f"""Query {query} failed""")
-    else:
-        cities = curs.fetchall()
-
-        for city, lon, lat in cities:
-            city = city.replace(" ", "_")
-
-            load_weather_forecast = PythonOperator(
-                task_id=f"load_{city}_forecast",
-                python_callable=load_forecast,
-                op_kwargs={"lon": lon, "lat": lat, "city": city},
-                dag=dag,
-            )
-
-            load_weather_forecast
+from airflow.hooks.base_hook import BaseHook
+from airflow.hooks.S3_hook import S3Hook
+from airflow.hooks.postgres_hook import PostgresHook
+from airflow.models import Variable
 
 
 # logging.basicConfig(
@@ -245,3 +200,52 @@ def create_jsonlines(original):
 
 if __name__ == "__main__":
     load_forecast(40.7127837, -74.0059413, "New_York")
+
+
+"""
+Code that goes along with the Airflow located at:
+http://airflow.readthedocs.org/en/latest/tutorial.html
+"""
+
+
+print("TESTTTTTTTTT")
+
+default_args = {
+    "owner": "airflow",
+    "depends_on_past": False,
+    "start_date": datetime.utcnow() - timedelta(minutes=70),
+    "email": "carless.jerome@gmail.com",
+    "email_on_failure": False,
+    "email_on_retry": False,
+    "retries": 1,
+    "retry_delay": timedelta(minutes=5),
+    'provide_context': True,
+    "catchup": False,
+}
+
+dag = DAG("load_weather_forecast", default_args=default_args, schedule_interval='@hourly')
+
+postgres = PostgresHook(postgres_conn_id="rds_connection")
+connection = postgres.get_conn()
+
+with connection.cursor() as curs:
+    try:
+        query = "SELECT city_name, lon, lat FROM cities"
+        curs.execute(query)
+    except BaseException as e:
+        connection.rollback()
+        raise AirflowException(f"""Query {query} failed""")
+    else:
+        cities = curs.fetchall()
+
+        for city, lon, lat in cities:
+            city = city.replace(" ", "_")
+
+            load_weather_forecast = PythonOperator(
+                task_id=f"load_{city}_forecast",
+                python_callable=load_forecast,
+                op_kwargs={"lon": lon, "lat": lat, "city": city},
+                dag=dag,
+            )
+
+            load_weather_forecast
