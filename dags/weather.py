@@ -3,7 +3,7 @@ from airflow.utils import dates
 from airflow.operators.python_operator import PythonOperator
 from airflow import DAG
 from datetime import datetime, timedelta
-from operators.weather import load_forecast
+# from operators.weather import load_forecast
 import requests
 import pytz
 import datetime
