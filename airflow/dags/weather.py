@@ -26,7 +26,7 @@ except BaseException as e:
     arr = os.listdir("airflow/dags")
     print("DIR: ", arr)
 
-from airflow.dags.weatherOperators import load_forecast
+from weatherOperators import load_forecast
 
 
 default_args = {
