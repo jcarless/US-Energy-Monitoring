@@ -12,7 +12,7 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.exceptions import AirflowException
 
 try:
-    from airflow.dags.weatherOperators import load_forecast
+    from weatherOperators import load_forecast
 except BaseException as e:
 
     print("FAILLLLL: ")
