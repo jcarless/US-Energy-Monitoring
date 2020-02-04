@@ -3,6 +3,7 @@ Code that goes along with the Airflow located at:
 http://airflow.readthedocs.org/en/latest/tutorial.html
 """
 
+from operators.weather import load_forecast
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -10,23 +11,6 @@ from airflow.models import Variable
 from airflow.utils import dates
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.exceptions import AirflowException
-
-try:
-    from weatherOperator import load_forecast
-except BaseException as e:
-
-    print("FAILLLLL: ")
-    import os
-
-    dirpath = os.getcwd()
-    print("current directory is : " + dirpath)
-    foldername = os.path.basename(dirpath)
-    print("Directory name is : " + foldername)
-
-    arr = os.listdir("airflow/dags")
-    print("DIR: ", arr)
-
-from weatherOperator import load_forecast
 
 
 default_args = {

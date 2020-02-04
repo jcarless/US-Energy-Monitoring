@@ -30,7 +30,7 @@ data:
   AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: "{{ .Values.airflow.image.tag }}"
   AIRFLOW__KUBERNETES__CATCHUP_BY_DEFAULT: "False"
   AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: "{{ include "airflow.fullname" . }}-env"
-  AIRFLOW__KUBERNETES__DAGS_IN_IMAGE: "False"
+  AIRFLOW__KUBERNETES__DAGS_IN_IMAGE: "{{ .Values.airflow.dagsInImage }}"
   AIRFLOW__KUBERNETES__DAGS_VOLUME_HOST: "/Users/jerome/Documents/real-time-traffic/airflow/dags"
   AIRFLOW__KUBERNETES__DELETE_WORKER_PODS: "True"
   AIRFLOW__KUBERNETES__NAMESPACE: "{{ .Release.Namespace }}"
