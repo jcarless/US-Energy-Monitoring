@@ -19,12 +19,14 @@ before_install:
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
     - docker build -t jcarless/real-time-traffic:latest .
 
-    # Install Helm
-    - wget https://get.helm.sh/helm-v3.0.2-linux-amd64.tar.gz
-    - helm plugin install https://github.com/futuresimple/helm-secrets
+    # # Install Helm
+    # - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+    # - chmod 700 get_helm.sh
+    # - ./get_helm.sh
+    # - helm plugin install https://github.com/futuresimple/helm-secrets
 
     # Import helm secret key
-    - gpg --import helm-values-secret.gpg
+    # - gpg --import helm-values-secret.gpg
 
 script:
     - docker-compose run webserver echo test
