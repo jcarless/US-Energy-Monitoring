@@ -1,6 +1,7 @@
 docker build -t jcarless/real-time-traffic:latest -t jcarless/real-time-traffic:$SHA .
 docker push jcarless/real-time-traffic:latest
 docker push jcarless/real-time-traffic:$SHA
+openssl aes-256-cbc -K $encrypted_4bf0def5b715_key -iv $encrypted_4bf0def5b715_iv -in secrets.tar.enc -out secrets.tar -d
 pwd
 ls
 gpg --import ./helm-values-secret.gpg
