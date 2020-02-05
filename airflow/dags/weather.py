@@ -2,8 +2,9 @@
 Code that goes along with the Airflow located at:
 http://airflow.readthedocs.org/en/latest/tutorial.html
 """
-from datetime import datetime, timedelta
 
+from operators.weather import load_forecast
+from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.models import Variable
@@ -11,8 +12,6 @@ from airflow.utils import dates
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.exceptions import AirflowException
 
-
-from operators.weather import load_forecast
 
 default_args = {
     "owner": "airflow",

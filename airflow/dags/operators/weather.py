@@ -16,10 +16,10 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import Variable
 
 
-# logging.basicConfig(
-#     format='%(asctime)s %(levelname)-8s %(message)s',
-#     level=logging.INFO,
-#     datefmt='%Y-%m-%d %H:%M:%S')
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S')
 
 URL = "https://api.darksky.net/forecast"
 

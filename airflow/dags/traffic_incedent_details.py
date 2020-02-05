@@ -22,7 +22,7 @@ default_args = {
     "retry_delay": timedelta(minutes=1),
 }
 
-dag = DAG("load_traffic_incident_details", default_args=default_args, catchup=False, schedule_interval='*/2 * * * *')
+dag = DAG("load_traffic_incident_details", default_args=default_args, catchup=False, schedule_interval='*/3 * * * *')
 
 load_traffic_incident_details = PythonOperator(
     task_id="load_traffic_incident_details",

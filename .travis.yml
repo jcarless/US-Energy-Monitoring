@@ -1,28 +1,41 @@
 sudo: required
 services:
     - docker
+env:
+    global:
+        - SHA=$(git rev-parse HEAD)
+        - CLOUDSDK_CORE_DISABLE_PROMPTS=1
 
 before_install:
     - openssl aes-256-cbc -K $encrypted_4bf0def5b715_key -iv $encrypted_4bf0def5b715_iv -in secrets.tar.enc -out secrets.tar -d
-    - tar -xf secrets.tar
-    - docker build -t jcarless/real-time-traffic:v0.0.1 .
+    - tar -xvf secrets.tar
+    - curl https://sdk.cloud.google.com | bash > /dev/null;
+    - source $HOME/google-cloud-sdk/path.bash.inc
+    - gcloud components update kubectl
+    - gcloud auth activate-service-account --key-file google_credentials.json
+    - gcloud config set project reat-time-traffic
+    - gcloud config set compute/zone us-central1-a
+    - gcloud container clusters get-credentials real-time-traffic
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker build -t jcarless/real-time-traffic:latest .
+
+    # # Install Helm
+    # - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+    # - chmod 700 get_helm.sh
+    # - ./get_helm.sh
+    # - helm plugin install https://github.com/futuresimple/helm-secrets
+
+    # Import helm secret key
+    # - gpg --import helm-values-secret.gpg
 
 script:
-    - docker-compose -f ./docker/docker-compose.yml run webserver echo test
+    - docker-compose run webserver echo test
 
-after_success:
-    # Log in to CLI
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
-    - docker push jcarless/real-time-traffic:v0.0.1
+# after_success:
+#     - docker push jcarless/real-time-traffic:v0.0.1
 
-# deploy:
-#     provider: elasticbeanstalk
-#     region: us-east-2
-#     app: real-time-traffic
-#     env: RealTimeTraffic-env
-#     bucket_name: elasticbeanstalk-us-east-2-803439283531
-#     bucket_path: real-time-traffic
-#     on:
-#         branch: master
-#     access_key_id: $AWS_ACCESS_KEY
-#     secret_access_key: $AWS_SECRET_KEY
+deploy:
+    provider: script
+    script: bash ./deploy.sh
+    on:
+        branch: master
