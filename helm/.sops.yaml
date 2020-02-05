@@ -1,0 +1,2 @@
+creation_rules:
+        - pgp: $SOPS_PGP_FP

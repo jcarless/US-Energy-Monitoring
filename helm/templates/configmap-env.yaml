@@ -44,12 +44,12 @@ data:
   AIRFLOW__CORE__FERNET_KEY: "{{ .Values.airflow.fernetKey }}"
   DO_WAIT_INITDB: "false"
   # Remote Logging
-  AWS_ACCESS_KEY_ID: "{{ .Values.aws.access_key }}"
-  AWS_SECRET_ACCESS_KEY: "{{ .Values.aws.secret_key }}"
+  {{- if .Values.logs.remote_logging.enable }}
   AIRFLOW__CORE__REMOTE_LOGGING: "{{ .Values.logs.remote_logging.enable }}"
   AIRFLOW__CORE__REMOTE_BASE_LOG_FOLDER: "{{ .Values.logs.remote_logging.base_folder }}"
   AIRFLOW__CORE__REMOTE_LOG_CONN_ID: "{{ .Values.logs.remote_logging.conn_id }}"
   encrypt_s3_logs: "False"
+  {{- end }}
   ## Custom Airflow settings
   AIRFLOW__CORE__DONOT_PICKLE: "{{ .Values.dags.doNotPickle }}"
   AIRFLOW__CORE__DAGS_FOLDER: "{{ .Values.dags.path }}"
