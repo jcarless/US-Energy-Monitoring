@@ -1,5 +1,12 @@
 docker build -t jcarless/real-time-traffic:latest -t jcarless/real-time-traffic:$SHA .
 docker push jcarless/real-time-traffic:latest
 docker push jcarless/real-time-traffic:$SHA
-gpg --import helm-values-secret.gpg
+pwd
+ls
+gpg --import ./helm-values-secret.gpg
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+helm init
+helm plugin install https://github.com/futuresimple/helm-secrets
 helm secrets install rtt --values ./helm/secrets.yaml ./helm/.
