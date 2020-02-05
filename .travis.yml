@@ -7,7 +7,8 @@ env:
         - CLOUDSDK_CORE_DISABLE_PROMPTS=1
 
 before_install:
-    - openssl aes-256-cbc -K $encrypted_4bf0def5b715_key -iv $encrypted_4bf0def5b715_iv -in google_credentials.json.enc -out google_credentials.json -d
+    - openssl aes-256-cbc -K $encrypted_4bf0def5b715_key -iv $encrypted_4bf0def5b715_iv -in secrets.tar.enc -out secrets.tar -d
+    - tar -xvf secrets.tar
     - curl https://sdk.cloud.google.com | bash > /dev/null;
     - source $HOME/google-cloud-sdk/path.bash.inc
     - gcloud components update kubectl
@@ -23,7 +24,6 @@ before_install:
     - helm plugin install https://github.com/futuresimple/helm-secrets
 
     # Import helm secret key
-    - openssl aes-256-cbc -K $encrypted_4bf0def5b715_key -iv $encrypted_4bf0def5b715_iv -in helm-values-secret.gpg.enc -out helm-values-secret.gpg -d
     - gpg --import helm-values-secret.gpg
     
     # - openssl aes-256-cbc -K $encrypted_4bf0def5b715_key -iv $encrypted_4bf0def5b715_iv -in secrets.tar.enc -out secrets.tar -d
