@@ -1,28 +1,43 @@
 sudo: required
 services:
     - docker
+env:
+    global:
+        - SHA=$(git rev-parse HEAD)
+        - CLOUDSDK_CORE_DISABLE_PROMPTS=1
 
 before_install:
-    - openssl aes-256-cbc -K $encrypted_4bf0def5b715_key -iv $encrypted_4bf0def5b715_iv -in secrets.tar.enc -out secrets.tar -d
-    - tar -xf secrets.tar
-    - docker build -t jcarless/real-time-traffic:v0.0.1 .
+    - openssl aes-256-cbc -K $encrypted_203bdf1f2a7c_key -iv $encrypted_203bdf1f2a7c_iv -in google_credentials.json.enc -out google_credentials.json -d
+    - curl https://sdk.cloud.google.com | bash > /dev/null;
+    - source $HOME/google-cloud-sdk/path.bash.inc
+    - gcloud components update kubectl
+    - gcloud auth activate-service-account --key-file google_credentials.json
+    - gcloud config set project reat-time-traffic
+    - gcloud config set compute/zone us-central1-a
+    - gcloud container clusters get-credentials real-time-traffic
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker build -t jcarless/real-time-traffic:latest .
+
+    # Install Helm
+    - wget https://get.helm.sh/helm-v3.0.2-linux-amd64.tar.gz
+    - helm plugin install https://github.com/futuresimple/helm-secrets
+
+    # Import helm secret key
+    - openssl aes-256-cbc -K $encrypted_0a6446eb3ae3_key -iv $encrypted_0a6446eb3ae3_key -in helm-values-secret.gpg.enc -out helm-values-secret.gpg -d
+    - gpg --import helm-values-secret.gpg
+    
+    # - openssl aes-256-cbc -K $encrypted_4bf0def5b715_key -iv $encrypted_4bf0def5b715_iv -in secrets.tar.enc -out secrets.tar -d
+    # - tar -xf secrets.tar
+    # - docker build -t jcarless/real-time-traffic:v0.0.1 .
 
 script:
-    - docker-compose -f ./docker/docker-compose.yml run webserver echo test
+    - docker-compose run webserver echo test
 
-after_success:
-    # Log in to CLI
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
-    - docker push jcarless/real-time-traffic:v0.0.1
+# after_success:
+#     - docker push jcarless/real-time-traffic:v0.0.1
 
-# deploy:
-#     provider: elasticbeanstalk
-#     region: us-east-2
-#     app: real-time-traffic
-#     env: RealTimeTraffic-env
-#     bucket_name: elasticbeanstalk-us-east-2-803439283531
-#     bucket_path: real-time-traffic
-#     on:
-#         branch: master
-#     access_key_id: $AWS_ACCESS_KEY
-#     secret_access_key: $AWS_SECRET_KEY
+deploy:
+    provider: script
+    script: bash ./deploy.sh
+    on:
+        branch: master
