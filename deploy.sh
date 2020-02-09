@@ -7,16 +7,17 @@ curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scr
 chmod 700 get_helm.sh
 ./get_helm.sh
 helm init
-helm plugin install https://github.com/futuresimple/helm-secrets
-GPG_TTY=$(tty)
-export GPG_TTY
-echo "===import==="
-echo $gpgpw | gpg --passphrase-fd 0 --import ./key.asc
-echo "===--list-keys==="
-gpg --list-keys
-echo "===--list-secret-keys==="
-gpg --list-secret-keys
-echo "===ls==="
-cat /home/travis/.gnupg/gpg.conf
-echo "===helm secrets==="
-helm secrets install rtt --values ./helm/secrets.yaml ./helm/.
+# helm plugin install https://github.com/futuresimple/helm-secrets
+# GPG_TTY=$(tty)
+# export GPG_TTY
+# echo "===import==="
+# echo $gpgpw | gpg --passphrase-fd 0 --import ./key.asc
+# echo "===--list-keys==="
+# gpg --list-keys
+# echo "===--list-secret-keys==="
+# gpg --list-secret-keys
+# echo "===ls==="
+# cat /home/travis/.gnupg/gpg.conf
+# echo "===helm secrets==="
+# helm secrets install rtt --values ./helm/secrets.yaml ./helm/.
+helm install rtt --values ./helm/secrets.yaml ./helm/.
