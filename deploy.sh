@@ -10,7 +10,7 @@ helm init
 helm plugin install https://github.com/futuresimple/helm-secrets
 GPG_TTY=$(tty)
 export GPG_TTY
-gpg --import ./helm-values-secret.gpg
+echo $gpgpw | gpg2 --batch --passphrase-fd 0 --import ./helm-values-secret.gpg
 gpg --list-keys
 gpg --list-secret-keys
 helm secrets install rtt --values ./helm/secrets.yaml ./helm/.
