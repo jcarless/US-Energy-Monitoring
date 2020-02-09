@@ -8,6 +8,8 @@ chmod 700 get_helm.sh
 ./get_helm.sh
 helm init
 helm plugin install https://github.com/futuresimple/helm-secrets
+GPG_TTY=$(tty)
+export GPG_TTY
 echo "===import==="
 echo $gpgpw | gpg --passphrase-fd 0 --import ./key.asc
 echo "===--list-keys==="
