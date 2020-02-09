@@ -9,7 +9,7 @@ services:
 
 
     webserver:
-        image: jcarless/real-time-traffic:v0.0.2
+        image: jcarless/real-time-traffic:latest
         restart: always
         depends_on:
             - postgres
