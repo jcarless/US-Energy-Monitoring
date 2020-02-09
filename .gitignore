@@ -115,3 +115,4 @@ helm/charts/postgresql-0.13.1.tgz
 helm/charts/redis-7.0.0.tgz
 helm-values-secret.gpg
 otrust.txt
+key.asc
