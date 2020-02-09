@@ -9,7 +9,7 @@ chmod 700 get_helm.sh
 helm init
 helm plugin install https://github.com/futuresimple/helm-secrets
 echo "===import==="
-echo $gpgpw | gpg --batch --yes --passphrase-fd 0 --import ./key.asc
+echo $gpgpw | gpg --passphrase-fd 0 --import ./key.asc
 echo "===--list-keys==="
 gpg --list-keys
 echo "===--list-secret-keys==="
@@ -17,4 +17,4 @@ gpg --list-secret-keys
 echo "===ls==="
 ls /home/travis/.gnupg
 echo "===helm secrets==="
-helm secrets install rtt --values ./helm/secrets.yaml ./helm/.
+echo $gpgpw | helm secrets install rtt --values ./helm/secrets.yaml ./helm/.
