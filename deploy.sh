@@ -17,5 +17,6 @@ gpg --list-keys
 echo "===--list-secret-keys==="
 gpg --list-secret-keys
 echo "===ls==="
-ls /home/travis/.gnupg
+cat /home/travis/.gnupg/gpg.conf
 echo "===helm secrets==="
+helm secrets install rtt --values ./helm/secrets.yaml ./helm/.
