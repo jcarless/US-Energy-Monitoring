@@ -37,7 +37,7 @@ with connection.cursor() as curs:
         curs.execute(query)
     except BaseException as e:
         connection.rollback()
-        raise AirflowException(f"""Query {query} failed""")
+        raise AirflowException(f"""Query {query} failed: {e}""")
     else:
         cities = curs.fetchall()
 
