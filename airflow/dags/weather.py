@@ -28,7 +28,7 @@ default_args = {
 
 dag = DAG("load_weather_forecast", default_args=default_args, schedule_interval='@hourly')
 
-postgres = PostgresHook(postgres_conn_id="rds_connection")
+postgres = PostgresHook(postgres_conn_id="cloud_sql_connection")
 connection = postgres.get_conn()
 
 with connection.cursor() as curs:
