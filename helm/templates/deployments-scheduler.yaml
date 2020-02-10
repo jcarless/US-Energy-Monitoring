@@ -188,6 +188,7 @@ spec:
               mkdir -p /usr/local/airflow/.local/bin &&
               export PATH=/usr/local/airflow/.local/bin:$PATH &&
               /usr/local/scripts/install-requirements.sh &&
+              pip install Werkzeug==0.16.1 &&
               {{- if .Values.airflow.initdb }}
               echo "executing initdb" &&
               airflow initdb &&
