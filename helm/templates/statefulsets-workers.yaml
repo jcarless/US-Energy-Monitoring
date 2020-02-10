@@ -186,6 +186,7 @@ spec:
               export PATH=/usr/local/airflow/.local/bin:$PATH &&
               /usr/local/scripts/install-requirements.sh &&
               pip install Werkzeug==0.16.1 &&
+              pip install marshmallow==2.18 &&
               echo 'executing worker...' &&
               airflow worker
           {{- else }}
