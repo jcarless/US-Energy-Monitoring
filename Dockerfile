@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
 # Airflow
-ARG AIRFLOW_VERSION=1.10.6
+ARG AIRFLOW_VERSION=1.10.9
 ARG AIRFLOW_USER_HOME=/usr/local/airflow
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
@@ -60,7 +60,8 @@ RUN set -ex \
     && pip install --upgrade google-cloud-storage \
     && pip install httplib2 --upgrade \
     && pip install --upgrade google_auth_httplib2 \
-    && pip install --upgrade google-api-python-client\
+    && pip install --upgrade google-api-python-client \
+    # && pip install werkzeug==0.16.0 \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \

@@ -9,6 +9,7 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   LOAD_EX: "n"
+  enable_proxy_fix: "false"
   TZ: Etc/UTC
   ## Postgres DB configuration
   POSTGRES_HOST: "{{ template "airflow.postgresql.fullname" . }}"
