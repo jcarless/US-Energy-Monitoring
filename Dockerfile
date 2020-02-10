@@ -62,6 +62,7 @@ RUN set -ex \
     && pip install --upgrade google_auth_httplib2 \
     && pip install --upgrade google-api-python-client \
     && pip install werkzeug==0.16.1 \
+    && pip install Flask==1.1.1 \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
