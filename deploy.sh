@@ -20,4 +20,5 @@ helm init
 # cat /home/travis/.gnupg/gpg.conf
 # echo "===helm secrets==="
 # helm secrets install rtt --values ./helm/secrets.yaml ./helm/.
+helm dependency update
 helm install rtt --values ./helm/secrets.yaml ./helm/.
