@@ -9,7 +9,6 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   LOAD_EX: "n"
-  enable_proxy_fix: "false"
   TZ: Etc/UTC
   ## Postgres DB configuration
   POSTGRES_HOST: "{{ template "airflow.postgresql.fullname" . }}"
@@ -32,7 +31,7 @@ data:
   AIRFLOW__KUBERNETES__CATCHUP_BY_DEFAULT: "False"
   AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: "{{ include "airflow.fullname" . }}-env"
   AIRFLOW__KUBERNETES__DAGS_IN_IMAGE: "{{ .Values.airflow.dagsInImage }}"
-  AIRFLOW__KUBERNETES__DAGS_VOLUME_HOST: "/Users/jerome/Documents/real-time-traffic/airflow/dags"
+  AIRFLOW__KUBERNETES__DAGS_VOLUME_HOST: "/Users/jerome/Documents/traffic-data-dags"
   AIRFLOW__KUBERNETES__DELETE_WORKER_PODS: "True"
   AIRFLOW__KUBERNETES__NAMESPACE: "{{ .Release.Namespace }}"
   AIRFLOW__SCHEDULER__STATSD_ON: "False"
@@ -59,7 +58,7 @@ data:
   AIRFLOW__SCHEDULER__CHILD_PROCESS_LOG_DIRECTORY: "{{ printf "%s/%s" .Values.logs.path "scheduler" }}"
   AIRFLOW__WEBSERVER__BASE_URL: "{{ .Values.web.baseUrl }}"
   # Disabling XCom pickling for forward compatibility
-  AIRFLOW__CORE__ENABLE_XCOM_PICKLING: "false"
+  AIRFLOW__CORE__ENABLE_XCOM_PICKLING: "true"
   # Note: changing `Values.airflow.config` won't change the configmap checksum and so won't make
   # the pods to restart
   {{- range $setting, $option := .Values.airflow.config }}

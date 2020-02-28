@@ -1,9 +1,8 @@
 {
-    "usa_bounding_box": {
-        "Val": "24.186221,-124.519558,49.382373,-66.689844"
-    },
+    "usa_bounding_box": "24.186221,-124.519558,49.382373,-66.689844",
+    "gcs_bucket": "real-time-traffic",
     "bigquery": {
-        "credentials_path": "/usr/local/airflow/credentials/google_credentials.json"
+        "credentials_path": "/usr/local/credentials/google_credentials.json"
     },
-    "gcs_bucket": "real-time-traffic"
+    "traffic_incidents_temp_folder_path": "/usr/local/airflow/dags/operators/temp_incedent_details"
 }

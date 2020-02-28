@@ -2,6 +2,7 @@ version: '3.7'
 services:
     postgres:
         image: postgres:9.6
+        container_name: airflow_db
         volumes:
             - ./postgres:/var/lib/postgresql/real-time-traffic
         env_file:
@@ -10,6 +11,8 @@ services:
 
     webserver:
         image: jcarless/real-time-traffic:latest
+        container_name: airflow
+        build: ./
         restart: always
         depends_on:
             - postgres
@@ -17,8 +20,8 @@ services:
             - .env
 
         volumes:
-            - ./airflow/dags:/usr/local/airflow/dags
-            - ./credentials:/usr/local/airflow/credentials
+            - /Users/jerome/Documents/traffic-data-dags:/usr/local/airflow/dags
+            - ./credentials:/usr/local/credentials
             - ./config:/usr/local/airflow/config
             - ./script:/usr/local/airflow/script
             # Uncomment to include custom plugins
